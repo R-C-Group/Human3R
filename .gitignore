@@ -62,3 +62,8 @@ command
 *.pkl
 *.npy
 *.npz
+*.zip
+
+
+download_huggingface.py
+huggingface_model/

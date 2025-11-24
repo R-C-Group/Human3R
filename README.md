@@ -41,7 +41,7 @@ pip install evo
 pip install open3d
 ```
 
-* 修补cuda核
+* 修补cuda核 (PS:这部分可能存在较多的bug，此处的setup.py代码也是经过修复的~)
 
 ```bash
 cd src/croco/models/curope/
@@ -50,12 +50,47 @@ python setup.py build_ext --inplace
 cd ../../../../
 ```
 
-下载所有的模型以及checkpoints：
+下载所有的模型以及checkpoints,注意需要先到[网站](https://smpl.is.tue.mpg.de)以及[网站2](https://download.is.tue.mpg.de/download.php?domain=smplx&sfile=models_smplx_v1_1.zip)进行注册；
+
+此外，还需要科学上网才可以下载到google drive里面的东西 `pip install gdown`
 
 ```bash
 # SMPLX family models
 bash scripts/fetch_smplx.sh
 
 # Human3R checkpoints
-huggingface-cli download faneggg/human3r666 human3r666.pth --local-dir ./src
+huggingface-cli download faneggg/human3r human3r.pth --local-dir ./src
+# 此处的下载建议用脚本
 ```
+
+* 采用脚本下载huggingface：`python download_huggingface.py`
+
+```py
+from huggingface_hub import snapshot_download  # 注意这里导入了 hf_hub_download
+
+model_path = snapshot_download(
+    repo_id="faneggg/human3r",
+    local_dir="/home/guanweipeng/Human3R/huggingface_model",
+    cache_dir="/home/guanweipeng/Human3R/huggingface_model/cache",  # 指定缓存目录
+    token="hf_******",     # ✅ 在这里传 token
+    endpoint="https://hf-mirror.com"   # 如果需要走镜像
+)
+
+print("文件下载到本地路径:", model_path)
+```
+
+
+## 推理测试的demo
+
+```bash
+# input can be a folder or a video
+# the following script will run inference with Human3R and visualize the output with viser on port 8080
+CUDA_VISIBLE_DEVICES=0 python demo.py --model_path MODEL_PATH --size 512 \
+    --seq_path SEQ_PATH --output_dir OUT_DIR --subsample 1 --use_ttt3r \
+    --vis_threshold 2 --downsample_factor 1 --reset_interval 100
+
+# Example:
+CUDA_VISIBLE_DEVICES=0 python demo.py --model_path src/human3r.pth --size 512 --seq_path examples/GoodMornin1.mp4 --subsample 1 --use_ttt3r --vis_threshold 2 --downsample_factor 1 --reset_interval 100 --output_dir tmp
+```
+
+结果会存放在`output_dir`文件夹内
