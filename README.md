@@ -20,9 +20,10 @@ git clone git@github.com:R-C-Group/Human3R.git
 conda create -n human3r666 python=3.11 cmake
 conda activate human3r666
 # conda install pytorch torchvision pytorch-cuda=12.4 -c pytorch -c nvidia  # use the correct version of cuda for your system
-pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124
-conda install pytorch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 pytorch-cuda=12.4 -c pytorch -c nvidia
-pip install mkl==2024.0.0
+# pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124
+# conda install pytorch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 pytorch-cuda=12.4 -c pytorch -c nvidia
+# pip install mkl==2024.0.0
+pip install --index-url https://download.pytorch.org/whl/cu124 torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1
 
 pip install -r requirements.txt
 # pip install --no-build-isolation chumpy
@@ -39,6 +40,8 @@ pip install gsplat
 # for evaluation
 pip install evo
 pip install open3d
+
+pip install scikit-image
 ```
 
 * 修补cuda核 (PS:这部分可能存在较多的bug，此处的setup.py代码也是经过修复的~)
@@ -79,6 +82,29 @@ model_path = snapshot_download(
 print("文件下载到本地路径:", model_path)
 ```
 
+~~~
+cp /home/guanweipeng/Human3R/huggingface_model/human3r.pth ./src
+~~~
+
+* 数据集下载：
+
+```bash
+wget --post-data "username=wpguan@connect.hku.hk&password=1104672297a" 'https://download.is.tue.mpg.de/download.php?domain=rich&resume=1&sfile=test_hsc.zip' -O 'examples/test_hsc.zip' --no-check-certificate --continue
+```
+
+* 运行的时候可能遇到加载dinov2失败的情况：
+  * 首先下载模型，应该是会存放在`/home/guanweipeng/.cache/torch/hub/main.zip`，运行`ls ~/.cache/torch/hub/facebookresearch_dinov2_main/`可以查看
+  * 然后重新运行，运行前添加：`export TORCH_HOME=/home/guanweipeng/.cache/torch`
+
+```bash
+python
+import torch
+import torch.hub
+
+# 手动下载 dinov2
+model = torch.hub.load('facebookresearch/dinov2', 'dinov2_vitl14', pretrained=True, force_reload=True)
+
+```
 
 ## 推理测试的demo
 
@@ -91,6 +117,8 @@ CUDA_VISIBLE_DEVICES=0 python demo.py --model_path MODEL_PATH --size 512 \
 
 # Example:
 CUDA_VISIBLE_DEVICES=0 python demo.py --model_path src/human3r.pth --size 512 --seq_path examples/GoodMornin1.mp4 --subsample 1 --use_ttt3r --vis_threshold 2 --downsample_factor 1 --reset_interval 100 --output_dir tmp
+
+# CUDA_VISIBLE_DEVICES=0 python demo.py --model_path src/human3r.pth --size 512 --seq_path examples/boy-walking2.mp4 --subsample 1 --use_ttt3r --vis_threshold 2 --downsample_factor 1 --reset_interval 100 --output_dir ./tmp
 ```
 
-结果会存放在`output_dir`文件夹内
+结果会存放在`output_dir`文件夹内（但并没有看到~）
