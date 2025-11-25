@@ -51,6 +51,10 @@ cd src/croco/models/curope/
 # rm -rf build/
 python setup.py build_ext --inplace
 cd ../../../../
+
+# 若出现cuda不匹配问题，需要在.bashrc中设置一下~
+export PATH=/usr/local/cuda/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 ```
 
 下载所有的模型以及checkpoints,注意需要先到[网站](https://smpl.is.tue.mpg.de)以及[网站2](https://download.is.tue.mpg.de/download.php?domain=smplx&sfile=models_smplx_v1_1.zip)进行注册；
